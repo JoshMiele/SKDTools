@@ -1,0 +1,354 @@
+--------------------
+ APLOT Auditory Display Function
+ APLOT(X, Y, DUR [SEC], UNITS, INTERVAL, F0, TP)
+ 
+ The X-axis is represented by the spatial location of the output 
+ signal in left-right space, and the Y-axis is represented by 
+ pitch, either as discrete tones or as a continuous tone that 
+ changes smoothly. If no output variables are specified, APLOT 
+ plays its output through the speakers attached to the workstation 
+ via SOUND. For example, APLOT(SIN(0:.01:6*PI)) results in three 
+ periods	 of a sine wave being represented. If an input value 
+ corresponds to a frequency that is too high or low for APLOT to 
+ represent, an off-scale indicator is heard. High- and low-pass 
+ filtered noise indicate input values that are too large or too 
+ small respectively. All values can be represented by properly 
+ adjusting UNITS and/or INTERVAL (see below). Whenever the input 
+ values crosses zero (an X-intercept) a brief noise burst is heard. 
+ This serves as an anchor so that the user knows when the display 
+ has changed sign. 
+ 
+ APLOT(Y)
+ If Y is a row vector the values of Y are plotted as Y values and 
+ bin indices are interpreted as X values. If Y is an N-by-2 matrix, 
+ bins in column 1 are treated as X values and bins in column 2 are 
+ treated as corresponding Y values. If Y is a row vector of complex 
+ values, the real parts are treated as X values and the imaginary 
+ parts are treated as corresponding Y values. In the latter two 
+ cases, a sepparate X argument is not permitted.
+ 
+ APLOT(X, Y)
+ If X and Y are row vectors of the same length  then each bin of 
+ vector X is interpreted as an X value for the corresponding bin in 
+ vector Y. If a sepparate Y argument is specified, then X must be a 
+ row vector. If X and Y are both specified then any imaginary 
+ componants are discarded.
+ 
+ APLOT(X, y, DUR)
+ DUR specifies how long the display should last IN SECONDS. Thus, 
+ APLOT(Y, 8) will play a representation of the data in vector Y, as 
+ a function of index, that lasts for approximately 8 seconds. If 
+ DUR is omitted, (e.g. APLOT(Y)), DUR defaults to a value of 5 
+ seconds. 
+ 
+ APLOT(X, y, DUR, UNITS)
+  UNITS allows the Y-axis (pitch) to be scaled to the desired 
+ number of units per interval. THIS is analogous to grid lines on 
+ graph paper. Thus, if APLOT receives a UNITS value of 0.2, each 
+ unit of input data will consist of 5 intervals; if UNITS is set to 
+ 1, each unit of input corresponds to a single interval step.
+ 
+ EXAMPLE: 
+ APLOT(SIN(0:.01:6*PI), 5, 0.5) 
+ includes tones at -1, -0.5, 0, 0.5, and 1. When input values are 
+ between unit tones, a linearly weighted sum of the two adjacent 
+ tones is used. If UNITS is set to 0, the display self-scales, such 
+ that the input data utilizes the entire display space. When self-
+ scaling the minimum and maximum input values are automatically 
+ mapped to the minimum  and  maximum output frequencies 
+ respectively. Self-scaling is most useful for getting a 
+ qualitative sense of the shape of an unfamiliar dataset. 
+ 
+ APLOT(X, Y, DUR, UNITS, INTERVAL)
+ INTERVAL determines the distance between consecutive tones in the 
+ discrete display by specifying the number of intervals per octave. 
+ Thus, as the value of INTERVAL increases, the pitch difference 
+ between consecutive tones decreases. For example, an INTERVAL 
+ value of 2 corresponds to half-octave steps, a value of 3 
+ corresponds to one third octave steps, a value of 4 corresponds to 
+ one fourth octave steps, etc. If INTERVAL is omitted, it defaults 
+ to a value of 4 (musical types will recognize this as a minor 
+ third). If INTERVAL is set to 1 negative number, then the display becomes
+ continuous rather than discrete. Instead of individual tones that fade 
+ from one to the next, the continuous display uses a single tone that 
+ changes smoothly without steps. In this mode, each unit on the display 
+ corresponds to intervals of (a/abs(INTERVAL)) of an octave. 
+ 
+ EXAMPLE:
+  APLOT(SIN(0:.01:6*PI), 5, 1, -4) produces a continuous 
+ representation of a three period sine wave whose amplitude is 1/2 
+ octave peak-to-peak. 
+ APLOT(SIN(0:.01:6*PI), 5, 0.5, -4)
+ Produces the same figure, but the amplitude is reduced to one 
+ quarter octave peak-to-peak.
+ 
+ APLOT(X, y, DUR, UNITS, INTERVAL, F0)
+ F0 specifies the frequency that corresponds to a value of zero in 
+ the input. If omitted, F0 defaults to 500 Hz. 
+ 
+ APLOT(X, y, DUR, UNITS, INTERVAL, F0, TP)
+ TP specifies the tick placement for X-axis indicators. You must 
+ specify each value at which a tick is to be located. For example, 
+ if Y is a row vector, and is therefore plotted with respect to bin 
+ number, TP specifies a set of bin numbers at which ticks will be 
+ placed. If both X and Y values are specifieds, then values in 
+ vector TP specify values of X for which ticks will be heard in the 
+ output. If omitted, TP defaults to an inactive state.  
+ 
+ EXAMPLE:
+ Z = 0:.01:10;
+ APLOT(Z, 5, 1, 4, 500, [100:100:LENGTH(Z)])
+ Produces an auditory plot of the linear values in Z with ticks 
+ every 100 bins.
+ APLOT(COS(Z), SIN(Z), 5, .2, 4, 500, [-1:.5:1])
+ Produces a circular plot with ticks at -1, -.5, 0, .5, and 1.
+ 
+  SIG = APLOT(...);
+ sets SIG to an N-by-2 matrix containing the output of APLOT that 
+ is normally be played by calling APLOT. SIG contains values 
+ between -1 and 1 and can be played with SOUND at a sampling rate 
+ of 16384 bins/sec. For example, 
+ 
+ SIG = APLOT(SIN(0:.01:6*PI));
+ SOUND(SIG, 16384)
+ 
+ Is equivalent to: 
+ APLOT((SIN(0:.01:6*PI))
+ 
+ This is useful when APLOT takes a long time to generate a sound 
+ that you wish to play repeatedly.
+ 
+ [SIG, X_CROSSINGS, TICKS, LOCATIONS] = APLOT(X, Y, DUR, UNITS, 
+ INTERVAL, F0, TP);
+ 
+ This allows X_CROSSINGS and TICKS to be manipulated independently 
+ from the display trace itself. When multiple output arguments are 
+ specified, SIG is a vector contains only the tones of the display 
+ without the noise bursts indicating zero crossings, or the ticks 
+ produced when TP is specified. Similarly, X_CROSSINGS is a vector 
+ containing only the noise bursts of the X-intercepts, and TICKS is 
+ a vector containing only the clicks produced when TP is specified. 
+ X_CROSSINGS and TICKS are contain values between -1 and 1, and can 
+ be played with SOUND at a sampling rate of 16384 bins/sec. 
+ LOCATIONS is an N-by-2 matrix that contains the stereo amplitude 
+ envelope used to "move" the display horizontally.  Thus,
+ 
+ [SIG, X_CROSSINGS, TICKS, LOCATIONS] = APLOT(SIN(0:.01,6*PI), 10, 
+ .2, 4, -1:.5:1);
+ SOUND( ([1;1]*(SIG + X_CROSSINGS + TICKS))' .* LOCATIONS, 16384)
+ 
+ Is equivalent to:
+ APLOT(SIN(0:.01:6*PI), 10, .2, 4, -1:.5:1)
+ 
+ See also ATVAL, SOUND.
+
+--------------------
+ ATVAL indicate when a curve attains or crosses a specified value.
+ ATVAL(X, LENGTHOUT, MARKS, TICKTYPE)
+ X is the original input vector passed to APLOT. lengthout is the length of 
+ the signal (in bins) that APLOT produced in its representation of X.
+ MARKS is the value or vector of values where auditory indicators are
+ desired. TICKTYPE can have values of 0, 1, or FILENAME. if (TICKTYPE == 0) 
+ then markers are 0.1 second noise bursts. If (TICKTYPE == 1), then 
+ markers are 0.1 sec, 1 KHz unramped tones. If (TICKTYPE == FILENAME) then
+ ATVAL uses the wav file at the specified location. 
+ 
+ See also: APLOT, SOUND.
+
+--------------------
+ BPLOT: Produce tactile image from data or graphics handle.
+ 
+ BPLOT(Y)
+ This function will emboss the data in Y on the currently selected 
+ Braille embosser. Axes and data limits ar automatically scaled 
+ according to the data contained in Y. The size of the output is 
+ determined by the settings specified in BRLPREFS. 
+ 
+ If Y is a vector of real values, then the values of each bin are 
+ plotted on the Y-axis, versus their bin number on the X-axis. If 
+ any element of Y is complex, then the real value of each element 
+ is plotted on the X-axis against the imaginary parts on the Y-
+ axis. 
+ 
+ If Y is an M-by-2 matrix, then the values of column 1 are treated 
+ as X values and the values in column 2 are treated as 
+ corresponding Y values. 
+ 
+ If Y is a handle to a graphics object such as a figure, axes, or 
+ line, then that object is embossed. Axes and line objects are 
+ scaled according to the data limits of the object. 
+ 
+ BPLOT(Y, AXES_LIMS)
+ If Y is a vector or matrix, the value of AXES_LIMS controls the 
+ scale of the data displayed. AXES_LIMS is of the form:
+      [X_MIN X_MAX Y_MIN Y_MAX]
+ 
+ BPLOT(... FIG_LABEL, X_LABEL, Y_LABEL)
+ If the strings FIG_LABEL, X_LABEL, and Y_LABEL are specified, 
+ then these strings are converted into Braille and added to the 
+ plot. If Y is a graphics handle, then use the commands TITLE, 
+ XLABEL, and YLABEL instead before executing BPLOT. 
+ 
+ PIX = BPLOT(...)
+ If an output variable is specified, then instead of sending the 
+ tactile image to the embosser, the pixel image is returned. This 
+ is a matrix each of whose elements will be a dot on the resulting 
+ tactile image. Elements with values of 1 represent a dot, and 
+ zeros represent blank space. This matrix can be embossed with 
+ PIX2BRL.
+ 
+ See also: AXES, BRLPREFS, PIX2BRL, PLOT, TEXT2BRL, TITLE, XLABEL, 
+ YLABEL.
+
+--------------------
+ brlchars ASCII characters and their Braille dot representations.
+ c = brlchars
+ The output variable is a cell array the first row of which contains 
+ single ASCII characters, and the second of which contains row vectors 
+ containing the dot values that are present in the corresponding Braille 
+ character.
+ 
+ Example:
+ c = brlchars;     %loads the cell array into variable c
+ asc_rep = c{1, 45} 
+ asc_rep =
+      l
+ brl_rep = c{2,45}
+ brl_rep =
+      1 2 3     %the dots in the Braille letter l
+ 
+ See also: TEXT2BRL.
+
+--------------------
+ FIG2PIX produces a pixel representation of a Matlab figure.
+ PIX = FIG2PIX(H)
+ This function produces a pixel representation of a Matlab 
+ figure whose handle is contained in H. The size of the 
+ representation is determined by the Braille page dims specified 
+ in BRLPREFS.M. 
+ 
+ The output variable PIX is suitable for passing to PIX2BRL for embossing.
+ 
+ See also: BRLPREFS, IMBRL, PIX2BRL, SKDMENU, TEXT2BRL.
+
+--------------------
+ IMBRL: Emboss image.
+ 
+ IMBRL(IMG, THRESHOLD)
+ Converts the image in the variable IMG to a Braille 
+ representation and embosses it on the default printer. If  IMG is 
+ a file name, then the image in the file specified will be 
+ embossed. If the image is a truecolor (RGB) image, then it is 
+ converted to gray scale using RGB2GRAY before embossing.
+ 
+ The argument THRESHOLD assigns the gray scale cut-off between 
+ black and white (dots and no dots). THRESHOLD can take on values 
+ from 1 to 99. If THRESHOLD is omitted, IMBRL uses a default value 
+ of 50.
+ 
+ Before embossing or returning, IMBRL analizes the resulting 
+ tactile representation to see if dot density is too high. If 
+ there are more dots than white space the image is inverted before 
+ embossing or returning.
+ 
+ A = imbrl(…)
+ If an output argument is specified, the tactile representation is 
+ not embossed, but is returned as an m-by-n matrix with ones and 
+ zeros representing dots and blank space respectively. This matrix 
+ can then be passed as an argument to PIX2BRL for embossing.
+ 
+ IMBRL(IMG, THRESHOLD, TITLE, CROP, DIMS)
+ TITLE can be specified as a string. It is converted to Braille 
+ using text2brl and is centered at the top of the resulting image. 
+ 
+ CROP is a 2x2 matrix specifying the portion of the image to be 
+ embossed or converted. It is of the form 
+      [FROM%DOWN TO%DOWN;
+       FROM%ACRS TO%ACRS]
+ 
+ DIMS is an optional 2-element vector that specifies the size of 
+ the output representation. It is of the form [MAX_WIDTH 
+ MAX_HEIGHT]Original image proportions are preserved, and the 
+ resulting representation is sized to maximize the image 
+ dimentions within the specified values of DIMS. If DIMS is 
+ unspecified then IMBRL uses values of X_MAX_PIX and Y_MAX_PIX as 
+ obtained from BRLPREFS.
+ 
+ Examples:
+ 
+ IMG = imread(‘foo.bmp’);     %read RGB image from disk
+ A = IMBRL(IMG)     %represent full image with default threshold 
+ and dimentions with no title.
+ 
+ IMBRL(‘foo.bmp’)     %same as above.
+ 
+ IMBRL(‘foo.bmp’, 70, ‘image of foo’, [5 95;5 95], [100 100])
+      %emboss the image contained in file foo.bmp using a 
+      %threshold of 70% with a proper title. Cut off the 5% of the image 
+      %around the edged, and use a maximum pixel dimention of 100 pixels 
+      %in both the x and y dimentions.
+ 
+ See also: BRLPREFS, IMREAD, PIX2BRL, TEXT2BRL.
+
+--------------------
+ PIX2BRL emboss a properly prepared pixel image.
+ PIX2BRL(PIX, FILENAME)
+ This function turns a properly prepared Braille pixel image into a 
+ Braille graphics file and sends it to the currently selected printer. 
+ The input argument PIX should contain a matrix whose elements are ones 
+ and zeros only. Wherever a matrix element is 1, there will be a dot in 
+ the resulting tactile image, and wherever there is a zero, there will be 
+ no dot. 
+ 
+ The FILENAME argument allows the user to specify the name of the Braille
+ graphics file to which the output should be saved. If no FILENAME 
+ argument is specified, the Braille graphics file is saved in a file in 
+ the current directory called temp.brg.
+ 
+ If your Braille embosser is not your default printer, you should select
+ your embosser in the Print Setup dialog before embossing with PIX2BRL.
+ 
+ See also: BPLOT, IMBRL, TEXT2BRL.
+
+--------------------
+ SKDMENU uimenu function for SKDtools.
+ skdmenu
+ Running this function when no figure windows are open adds a menu to the 
+ default figure window's menu bar that allows easy embossing and 
+ sonification of figure window elements such as lines and axes. 
+ 
+ Typing this command when a figure window is open adds the SKD menu to 
+ the current figure's menu bar if it is not already present.
+ 
+ See also: APLOT, BPLOT, FIG2PIX, IMBRL, PIX2BRL.
+
+--------------------
+ TEXT2BRL Converts ASCII to a pixel representation of Braille.
+ PIX = TEXT2BRL(STRING, CHAR_SIZE)
+ Produces a cell array containing pixel representations of the ASCII 
+ strings contained in the input variable STRING. The number of elements 
+ in the output cell array corresponds to the number of rows in the input 
+ STRING matrix. 
+ 
+ The CHR_SIZE argument can be set to 'small', or 'large'. If the argument
+ is omitted, the default output is 'small'. The 'large' option is useful 
+ when working with Braille embossers set to produce high-resolution 
+ tactile graphics. The 'large' setting doubles the spacing between dots 
+ in Braille characters.
+ 
+ The output variable PIX contains a pixel representation of Braille
+ characters suitable for use with images produced with BRLPREP, FIG2PIX, 
+ and IMBRL. It is ideal for adding Braille labels to tactile graphics.
+ 
+ Example:
+  p = ones(40); p(2:39, 2:39) = zeros(38);
+      %make a square border
+ brl_label = text2brl(',box #a4');
+      %convert ASCII to Braille pixels
+ [r, c] = size(brl_label{1});   %how big is the Braille label?
+ p( round( (40-r)/2 )+(1:r), round( (40-c)/2 )+(1:c) ) = brl_label{1};
+      %add label to center of box
+ pix2brl(p)     %emboss the resulting image
+ 
+ See also: BRLPREP, FIG2PIX, IMBRL, NUM2STR, and PIX2BRL.
+
